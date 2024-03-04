@@ -13,19 +13,20 @@ body {
     min-height: 100vh;
     padding: 10px;
     font-family: 'Poppins', sans-serif;
-    background: rgb(160,255,254);
-    background: linear-gradient(90deg, rgba(160,255,254,1) 0%, rgba(189,255,178,1) 52%, rgba(0,255,248,1) 100%);
+    background: rgb(112,111,111);
+    background: linear-gradient(90deg, rgba(112,111,111,1) 0%, rgba(107,101,101,1) 50%, rgba(101,98,98,1) 100%);
 }
 
 .container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    border: 3px solid black;
 }
 
 .container-form{
     max-width: 800px;
-    background: #fff;
+    background: #ffffff;
     width: 800px;
     padding: 25px 40px 10px 40px;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
@@ -134,8 +135,32 @@ position: relative;
 }
 
 .cards {
-    width: 80%; /* Set to a percentage for responsiveness */
+    width: 80%;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
+}
+
+.card {
+    width: 200px; /* Adjust the width as needed */
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.card img {
+    width: 100%; /* Make the image fill the container */
+    transform: scale(1); /* Set the scale factor (50%) */
+    transition: transform 0.3s ease; /* Add a smooth transition effect */
+    box-shadow: 0 10px 10px rgba(255, 140, 0, 0.6); /* Dark orange shadow */
+}
+
+.card:hover img {
+    transform: scale(1.5); /* Increase the scale on hover */
+}
+
+.card-text {
+    background: rgba(0, 0, 0, 0.7); /* Semi-transparent background for the text box */
+    color: #fff; /* Text color */
+    padding: 10px; /* Adjust padding as needed */
+    box-sizing: border-box;
 }

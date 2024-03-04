@@ -12,17 +12,12 @@
             <div class="text">
                 Add card
              </div>
-            <form action="#">
+            <form action="/", method="POST">
                 <div class="form-row">
                     <div class="input-data">
-                        <input type="text" name="card_name" required>
-                        <div class="underline"></div>
-                        <label for="">Name</label>
-                    </div>
-                    <div class="input-data">
-                        <select id="sets" name="selected_set">
-                            {% for set in sets %}
-                                <option value="{{ set }}">{{ set }}</option>
+                        <select id="card_name" name="selected_card_name" required style="width: 250px;">
+                            {% for card_name in card_names %}
+                                <option value="{{ card_name }}">{{ card_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -37,12 +32,13 @@
         </div>
         <div class="cards">
             {% for card_data in card_data_list %}
-                <div class="card">
-                    <p>ID: {{ card_data.id }}</p>
+            <div class="card">
+                <img src="{{ card_data.image_uri_normal }}" alt="Card Image">
+                <div class="card-text">
                     <p>Name: {{ card_data.name }}</p>
                     <p>Rarity: {{ card_data.rarity }}</p>
-                    <img src="{{ card_data.image_uri_small }}" alt="Card Image">
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>
