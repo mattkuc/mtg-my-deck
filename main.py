@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, g
 import sqlite3
 import json
 import os
@@ -55,7 +55,22 @@ database_file = 'mtg-cards.db'
 # conn.close()
 
 app = Flask(__name__)
+app.config['DATABASE'] = 'mtg-cards.db'
 
+def get_db():
+    if 'db' not in g:
+        g.db = sqlite3.connect(app.config['DATABASE'])
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
+def close_db(e=None):
+    db = g.pop('mtg-cards', None)
+    if db is not None:
+        db.close()
+
+@app.teardown_appcontext
+def close_database(error):
+    close_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -63,15 +78,23 @@ def index():
         selected_set = request.form['selected_set']
         card_name = request.form['card_name']
 
-        #process part of the selected set
-
-        print(f'Selected set: {selected_set}')
-        print(f'Card name: {card_name}')
+        db = get_db()
+        cursor = db.cursor()
         
-        return 'Form submitted successfully!'
     else:
+        db = get_db()
+        cursor = db.cursor()
+
+        # Fetch all cards from the database
+        query = "SELECT id, name, rarity, image_uri_small, image_uri_normal FROM cards"
+        cards = cursor.execute(query).fetchall()
+
+        # Convert the rows to a list of dictionaries for easier template rendering
+        card_data_list = [dict(card) for card in cards]
+
         with open('sets-mtg.txt', 'r') as file:
             sets = [line.strip() for line in file.readlines()]
-        return render_template('index.html', sets=sets)
+
+        return render_template('index.html', sets=sets, card_data_list=card_data_list)
 if __name__ == "__main__":
     app.run(debug=True)

@@ -36,7 +36,14 @@
             </form>
         </div>
         <div class="cards">
-
+            {% for card_data in card_data_list %}
+                <div class="card">
+                    <p>ID: {{ card_data.id }}</p>
+                    <p>Name: {{ card_data.name }}</p>
+                    <p>Rarity: {{ card_data.rarity }}</p>
+                    <img src="{{ card_data.image_uri_small }}" alt="Card Image">
+                </div>
+            {% endfor %}
         </div>
     </div>
 </body>
