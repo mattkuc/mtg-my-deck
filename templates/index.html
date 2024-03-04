@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>My Flask App</title>
+</head>
+<body>
+    <div class="container">
+        <div class="container-form">
+            <div class="text">
+                Add card
+             </div>
+            <form action="#">
+                <div class="form-row">
+                    <div class="input-data">
+                        <input type="text" name="card_name" required>
+                        <div class="underline"></div>
+                        <label for="">Name</label>
+                    </div>
+                    <div class="input-data">
+                        <select id="sets" name="selected_set">
+                            {% for set in sets %}
+                                <option value="{{ set }}">{{ set }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row submit-btn">
+                    <div class="input-data">
+                       <div class="inner"></div>
+                       <input type="submit" value="Submit">
+                    </div>
+                 </div>
+            </form>
+        </div>
+        <div class="cards">
+
+        </div>
+    </div>
+</body>
+</html>
