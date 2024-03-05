@@ -13,15 +13,16 @@ body {
     min-height: 100vh;
     padding: 10px;
     font-family: 'Poppins', sans-serif;
-    background: rgb(112,111,111);
-    background: linear-gradient(90deg, rgba(112,111,111,1) 0%, rgba(107,101,101,1) 50%, rgba(101,98,98,1) 100%);
+    background: rgb(255, 255, 255);
 }
 
 .container {
+    width: 80%;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 3px solid black;
+    border: 3px solid #4babeb;
 }
 
 .container-form{
@@ -30,6 +31,8 @@ body {
     width: 800px;
     padding: 25px 40px 10px 40px;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    margin-bottom: 100px;
+    border: 3px solid #4babeb;
 }
 
 .container-form .text{
@@ -63,7 +66,7 @@ position: relative;
   height: 100%;
   border: none;
   font-size: 17px;
-  border-bottom: 2px solid rgba(0,0,0, 0.12);
+  border-bottom: 2px solid #4babeb;
 }
 .input-data input:focus ~ label, .textarea textarea:focus ~ label,
 .input-data input:valid ~ label, .textarea textarea:valid ~ label{
@@ -135,32 +138,69 @@ position: relative;
 }
 
 .cards {
-    width: 80%;
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
+    border:2px solid #9f01ea;
+}
+
+.card_stats {
+    width: 25%;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #bfc1c2;
+}
+
+.card_gallery {
+    width: 75%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .card {
-    width: 200px; /* Adjust the width as needed */
-    margin-bottom: 20px;
+    flex: 0 0 calc(33.333% - 10px); /* Adjust the width of each card with margin */
+    margin-bottom: 10px;
+    overflow: hidden;
     position: relative;
 }
 
 .card img {
-    width: 100%; /* Make the image fill the container */
-    transform: scale(1); /* Set the scale factor (50%) */
-    transition: transform 0.3s ease; /* Add a smooth transition effect */
-    box-shadow: 0 10px 10px rgba(255, 140, 0, 0.6); /* Dark orange shadow */
-}
-
-.card:hover img {
-    transform: scale(1.5); /* Increase the scale on hover */
+    transform: scale(0.6);
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+    box-shadow: 0 10px 10px rgba(255, 140, 0, 0.6);
 }
 
 .card-text {
-    background: rgba(0, 0, 0, 0.7); /* Semi-transparent background for the text box */
-    color: #fff; /* Text color */
-    padding: 10px; /* Adjust padding as needed */
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px;
     box-sizing: border-box;
+    position: relative;
+    z-index: 1; /* Set the z-index to keep the text above the image */
+    transition: z-index 0s ease 0.3s; /* Delay z-index change to avoid flickering */
+}
+
+.card:hover {
+    z-index: 1;
+}
+
+.card:hover img {
+    transform: scale(0.9);
+    z-index: 2; /* Move the image above the text on hover */
+}
+
+.card:hover .card-text {
+    z-index: 0; /* Move the text below the image on hover */
+    transition: z-index 0s ease 0s; /* No delay for z-index change on hover */
+}
+
+#ghost-text {
+    opacity: 0.5; /* Adjust the opacity as needed */
+    font-style: italic;
 }

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>My Flask App</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
 </head>
 <body>
     <div class="container">
@@ -15,31 +17,41 @@
             <form action="/", method="POST">
                 <div class="form-row">
                     <div class="input-data">
-                        <select id="card_name" name="selected_card_name" required style="width: 250px;">
-                            {% for card_name in card_names %}
-                                <option value="{{ card_name }}">{{ card_name }}</option>
-                            {% endfor %}
-                        </select>
+                        <span id="combined-input">
+                            <input type="text" id="card_name" name="selected_card_name" placeholder="Card Name">
+                            <div id="ghost-text"></div>
+                        </span>
                     </div>
+                    <div class="submit-btn" style="width: 850px;">
+                        <div class="input-data">
+                           <div class="inner"></div>
+                           <input type="submit" value="Submit">
+                        </div>
+                     </div>
                 </div>
-                <div class="form-row submit-btn">
-                    <div class="input-data">
-                       <div class="inner"></div>
-                       <input type="submit" value="Submit">
-                    </div>
-                 </div>
+                
             </form>
         </div>
         <div class="cards">
-            {% for card_data in card_data_list %}
-            <div class="card">
-                <img src="{{ card_data.image_uri_normal }}" alt="Card Image">
-                <div class="card-text">
-                    <p>Name: {{ card_data.name }}</p>
-                    <p>Rarity: {{ card_data.rarity }}</p>
-                </div>
+            <div class="card_stats">
+                <h3>Card Statistics</h3>
+                <p>Total Cards: {{ total_cards }}</p>
+                <p>Common: {{ rarity_counts['common'] }}</p>
+                <p>Uncommon: {{ rarity_counts['uncommon'] }}</p>
+                <p>Rare: {{ rarity_counts['rare'] }}</p>
+                <p>Mythic: {{ rarity_counts['mythic'] }}</p>
             </div>
+            <div class="card_gallery">
+                {% for card_data in card_data_list %}
+                <div class="card">
+                    <img src="{{ card_data.image_uri_normal }}" alt="Card Image">
+                    <div class="card-text">
+                        <p>Name: {{ card_data.name }}</p>
+                        <p>Rarity: {{ card_data.rarity }}</p>
+                    </div>
+                </div>
             {% endfor %}
+            </div>
         </div>
     </div>
 </body>

@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, g, redirect, url_for
+from flask import Flask, render_template, request, g, redirect, url_for, jsonify
 from urllib.parse import urlencode
 import requests
 import sqlite3
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 app.config['DATABASE'] = 'mtg-cards.db'
 
 def create_table_if_not_exists():
@@ -73,6 +73,21 @@ def get_card_names_from_file():
         card_names = [line.strip() for line in file.readlines()]
     return card_names
 
+
+
+def get_matching_card_names(prefix):
+    # Example function that returns matching card names
+    # Replace this with your actual logic to fetch matching names
+    card_names = get_card_names_from_file()
+    matching_names = [name for name in card_names if name.lower().startswith(prefix.lower())]
+    return matching_names
+
+@app.route('/autocomplete', methods=['GET'])
+def autocomplete():
+    prefix = request.args.get('prefix', '')
+    matching_names = get_matching_card_names(prefix)
+    return jsonify(matching_names)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -107,13 +122,28 @@ def index():
         # Convert the rows to a list of dictionaries for easier template rendering
         card_data_list = [dict(card) for card in cards]
 
+        # Calculate statistics
+        total_cards = len(card_data_list)
+        rarity_counts = {'common': 0, 'uncommon': 0, 'rare': 0, 'mythic': 0}
+
+        for card in card_data_list:
+            rarity = card['rarity']
+            rarity_counts[rarity] += 1  # Increment the count for the specific rarity
+
         with open('sets-mtg.txt', 'r') as file:
             sets = [line.strip() for line in file.readlines()]
 
         with open('card_names.txt', 'r') as file:
             card_names = [line.strip() for line in file.readlines()]
 
-        return render_template('index.html', sets=sets, card_data_list=card_data_list, card_names=card_names)
+        return render_template(
+            'index.html',
+            sets=sets,
+            card_data_list=card_data_list,
+            card_names=card_names,
+            total_cards=total_cards,
+            rarity_counts=rarity_counts
+        )
 
 if __name__ == "__main__":
     app.run(debug=True)
