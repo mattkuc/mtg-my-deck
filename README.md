@@ -14,3 +14,14 @@ Planned:
 - More statistics
 - Additional site for financial statistics of cards for price comparison
 - CRUD for decks of cards
+
+
+USED TECHNOLOGIES:
+- Python 3.12
+- SQLite 3
+- Flask
+
+USED LIBRARIES:
+- Flask
+- Requests
+- OS
