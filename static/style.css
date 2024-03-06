@@ -164,14 +164,13 @@ position: relative;
 .card {
     flex: 0 0 calc(33.333% - 10px); /* Adjust the width of each card with margin */
     margin-bottom: 10px;
-    overflow: hidden;
+    /* overflow: hidden; */
     position: relative;
 }
 
 .card img {
-    transform: scale(0.6);
+    transform: scale(0.8);
     max-width: 100%;
-    height: auto;
     transition: transform 0.3s ease;
     box-shadow: 0 10px 10px rgba(255, 140, 0, 0.6);
 }
@@ -182,8 +181,7 @@ position: relative;
     padding: 10px;
     box-sizing: border-box;
     position: relative;
-    z-index: 1; /* Set the z-index to keep the text above the image */
-    transition: z-index 0s ease 0.3s; /* Delay z-index change to avoid flickering */
+    z-index: 0; /* Set the z-index to keep the text above the image */
 }
 
 .card:hover {
@@ -191,13 +189,8 @@ position: relative;
 }
 
 .card:hover img {
-    transform: scale(0.9);
-    z-index: 2; /* Move the image above the text on hover */
-}
-
-.card:hover .card-text {
-    z-index: 0; /* Move the text below the image on hover */
-    transition: z-index 0s ease 0s; /* No delay for z-index change on hover */
+    transform: scale(1.2);
+    z-index: 20; /* Move the image above the text on hover */
 }
 
 #ghost-text {

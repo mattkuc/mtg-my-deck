@@ -37,8 +37,8 @@ def create_table_if_not_exists():
                 preview_source TEXT, 
                 preview_source_uri TEXT, 
                 previewed_at TEXT,
-                price_usd TEXT,
-                price_eur TEXT,
+                price_usd REAL,
+                price_eur REAL,
                 rarity TEXT,
                 reprint INTEGER,
                 rulings_uri TEXT,
@@ -92,13 +92,12 @@ def save_card_to_db(card_data):
 
     # Extract prices for each currency
     prices_dict = card_data.get('prices', {})
-    price_usd = prices_dict.get('usd', '')
-    price_eur = prices_dict.get('eur', '')
 
     # Extract preview parameters
-    preview_source = card_data['preview'].get('source', '')
-    preview_source_uri = card_data['preview'].get('source_uri', '')
-    previewed_at = card_data['preview'].get('previewed_at', '')
+    preview_data = card_data.get('preview', {})
+    preview_source = preview_data.get('source', '')
+    preview_source_uri = preview_data.get('source_uri', '')
+    previewed_at = preview_data.get('previewed_at', '')
 
     cursor.execute('''
         INSERT INTO cards (
@@ -116,38 +115,39 @@ def save_card_to_db(card_data):
             :set_card, :toughness, :type_line, :variation
         )
     ''', {
-        'id': card_data['id'],
-        'name': card_data['name'],
-        'rarity': card_data['rarity'],
-        'image_uri_normal': card_data['image_uris']['normal'],
-        'booster': card_data.get('booster', ''),
-        'cardmarket_id': card_data.get('cardmarket_id', ''),
-        'colors': colors_str,
-        'edhrec_rank': card_data.get('edhrec_rank', ''),
-        'flavor_text': card_data.get('flavor_text', ''),
-        'foil': card_data.get('foil', ''),
-        'keywords': keywords_str,
-        'lang': card_data.get('lang', ''),
-        'mana_cost': card_data.get('mana_cost', ''),
-        'nonfoil': card_data.get('nonfoil', ''),
-        'power': card_data.get('power', ''),
-        'preview_source': preview_source,
-        'preview_source_uri': preview_source_uri,
-        'previewed_at': previewed_at,
-        'price_usd': price_usd,
-        'price_eur': price_eur,
-        'rarity': card_data.get('rarity', ''),
-        'reprint': card_data.get('reprint', ''),
-        'rulings_uri': card_data.get('rulings_uri', ''),
-        'scryfall_uri': card_data.get('scryfall_uri', ''),
-        'set_card': card_data.get('set', ''),
-        'toughness': card_data.get('toughness', ''),
-        'type_line': card_data.get('type_line', ''),
-        'variation': card_data.get('variation', '')
+        'id': card_data.get('id', None),
+        'name': card_data.get('name', None),
+        'rarity': card_data.get('rarity', None),
+        'image_uri_normal': card_data.get('image_uris', {}).get('normal', None),
+        'booster': card_data.get('booster', None),
+        'cardmarket_id': card_data.get('cardmarket_id', None),
+        'colors': colors_str if colors_str else None,
+        'edhrec_rank': card_data.get('edhrec_rank', None),
+        'flavor_text': card_data.get('flavor_text', None),
+        'foil': card_data.get('foil', None),
+        'keywords': keywords_str if keywords_str else None,
+        'lang': card_data.get('lang', None),
+        'mana_cost': card_data.get('mana_cost', None),
+        'nonfoil': card_data.get('nonfoil', None),
+        'power': card_data.get('power', None),
+        'preview_source': preview_source if preview_source else None,
+        'preview_source_uri': preview_source_uri if preview_source_uri else None,
+        'previewed_at': previewed_at if previewed_at else None,
+        'price_usd': float(prices_dict.get('usd', 0.00)),  
+        'price_eur': float(prices_dict.get('eur', 0.00)), 
+        'rarity': card_data.get('rarity', None),
+        'reprint': card_data.get('reprint', None),
+        'rulings_uri': card_data.get('rulings_uri', None),
+        'scryfall_uri': card_data.get('scryfall_uri', None),
+        'set_card': card_data.get('set', None),
+        'toughness': card_data.get('toughness', None),
+        'type_line': card_data.get('type_line', None),
+        'variation': card_data.get('variation', None)
     })
 
     db.commit()
     db.close()
+
 
 def get_card_names_from_file():
     with open('card_names.txt', 'r') as file:
@@ -168,6 +168,20 @@ def autocomplete():
     prefix = request.args.get('prefix', '')
     matching_names = get_matching_card_names(prefix)
     return jsonify(matching_names)
+
+@app.route('/remove/<card_id>', methods=['GET'])
+def remove_card(card_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    # Execute SQL query to delete the card with the specified ID
+    query = "DELETE FROM cards WHERE id = ?"
+    cursor.execute(query, (card_id,))
+
+    db.commit()
+    db.close()
+
+    return redirect(url_for('index'))
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -199,6 +213,20 @@ def index():
         db = get_db()
         cursor = db.cursor()
 
+
+        query = """
+            SELECT
+                COUNT(*) AS total_cards,
+                SUM(CAST(price_usd AS FLOAT)) AS cumulative_price_usd,
+                SUM(CAST(price_eur AS FLOAT)) AS cumulative_price_eur
+            FROM cards;
+        """
+        result = cursor.execute(query).fetchone()
+
+        total_cards = result['total_cards']
+        cumulative_price_usd = result['cumulative_price_usd']
+        cumulative_price_eur = result['cumulative_price_eur']
+
         # Fetch all cards from the database
         query = "SELECT id, name, rarity, image_uri_normal FROM cards"
         cards = cursor.execute(query).fetchall()
@@ -214,6 +242,8 @@ def index():
             rarity = card['rarity']
             rarity_counts[rarity] += 1  # Increment the count for the specific rarity
 
+
+
         with open('sets-mtg.txt', 'r') as file:
             sets = [line.strip() for line in file.readlines()]
 
@@ -226,7 +256,9 @@ def index():
             card_data_list=card_data_list,
             card_names=card_names,
             total_cards=total_cards,
-            rarity_counts=rarity_counts
+            rarity_counts=rarity_counts,
+            cumulative_price_usd=cumulative_price_usd,
+            cumulative_price_eur=cumulative_price_eur
         )
 
 if __name__ == "__main__":
