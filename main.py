@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 import requests
 import sqlite3
 import os
+import json
 
 app = Flask(__name__, static_url_path='/static')
 app.config['DATABASE'] = 'mtg-cards.db'
@@ -21,8 +22,31 @@ def create_table_if_not_exists():
             CREATE TABLE IF NOT EXISTS cards (
                 id TEXT PRIMARY KEY,
                 name TEXT,
+                image_uri_normal TEXT,
+                booster INTEGER,
+                cardmarket_id INTEGER,
+                colors TEXT,
+                edhrec_rank INTEGER,
+                flavor_text TEXT,
+                foil INTEGER,
+                keywords TEXT,
+                lang TEXT,
+                mana_cost TEXT,
+                nonfoil INTEGER,
+                power TEXT,
+                preview_source TEXT, 
+                preview_source_uri TEXT, 
+                previewed_at TEXT,
+                price_usd TEXT,
+                price_eur TEXT,
                 rarity TEXT,
-                image_uri_normal TEXT
+                reprint INTEGER,
+                rulings_uri TEXT,
+                scryfall_uri TEXT,
+                set_card TEXT,
+                toughness TEXT,
+                type_line TEXT,
+                variation INTEGER
             )
         ''')
 
@@ -30,11 +54,16 @@ def create_table_if_not_exists():
         conn.commit()
         conn.close()
 
+        print("Table 'cards' created.")
+    else:
+        print("Database file exists, skipping table creation.")
+
 @app.before_request
 def before_request():
     if not hasattr(g, 'db_initialized'):
         create_table_if_not_exists()
         g.db_initialized = True
+        print("Database initialized.")
 
 def get_db():
     if 'db' not in g:
@@ -55,14 +84,66 @@ def save_card_to_db(card_data):
     db = get_db()
     cursor = db.cursor()
 
+    # Combine 'colors' into a single string
+    colors_str = ''.join(card_data.get('colors', ''))
+
+    # Combine 'keywords' into a single string with underscores
+    keywords_str = '_'.join(card_data.get('keywords', ''))
+
+    # Extract prices for each currency
+    prices_dict = card_data.get('prices', {})
+    price_usd = prices_dict.get('usd', '')
+    price_eur = prices_dict.get('eur', '')
+
+    # Extract preview parameters
+    preview_source = card_data['preview'].get('source', '')
+    preview_source_uri = card_data['preview'].get('source_uri', '')
+    previewed_at = card_data['preview'].get('previewed_at', '')
+
     cursor.execute('''
-        INSERT INTO cards (id, name, rarity, image_uri_normal)
-        VALUES (:id, :name, :rarity, :image_uri_normal)
+        INSERT INTO cards (
+            id, name, rarity, image_uri_normal, booster, cardmarket_id, colors,
+            edhrec_rank, flavor_text, foil, keywords, lang, mana_cost, nonfoil,
+            power, preview_source, preview_source_uri, previewed_at,
+            price_usd, price_eur, rarity, reprint, rulings_uri, scryfall_uri,
+            set_card, toughness, type_line, variation
+        )
+        VALUES (
+            :id, :name, :rarity, :image_uri_normal, :booster, :cardmarket_id, :colors,
+            :edhrec_rank, :flavor_text, :foil, :keywords, :lang, :mana_cost, :nonfoil,
+            :power, :preview_source, :preview_source_uri, :previewed_at,
+            :price_usd, :price_eur, :rarity, :reprint, :rulings_uri, :scryfall_uri,
+            :set_card, :toughness, :type_line, :variation
+        )
     ''', {
         'id': card_data['id'],
         'name': card_data['name'],
         'rarity': card_data['rarity'],
-        'image_uri_normal': card_data['image_uris']['normal']
+        'image_uri_normal': card_data['image_uris']['normal'],
+        'booster': card_data.get('booster', ''),
+        'cardmarket_id': card_data.get('cardmarket_id', ''),
+        'colors': colors_str,
+        'edhrec_rank': card_data.get('edhrec_rank', ''),
+        'flavor_text': card_data.get('flavor_text', ''),
+        'foil': card_data.get('foil', ''),
+        'keywords': keywords_str,
+        'lang': card_data.get('lang', ''),
+        'mana_cost': card_data.get('mana_cost', ''),
+        'nonfoil': card_data.get('nonfoil', ''),
+        'power': card_data.get('power', ''),
+        'preview_source': preview_source,
+        'preview_source_uri': preview_source_uri,
+        'previewed_at': previewed_at,
+        'price_usd': price_usd,
+        'price_eur': price_eur,
+        'rarity': card_data.get('rarity', ''),
+        'reprint': card_data.get('reprint', ''),
+        'rulings_uri': card_data.get('rulings_uri', ''),
+        'scryfall_uri': card_data.get('scryfall_uri', ''),
+        'set_card': card_data.get('set', ''),
+        'toughness': card_data.get('toughness', ''),
+        'type_line': card_data.get('type_line', ''),
+        'variation': card_data.get('variation', '')
     })
 
     db.commit()
@@ -90,6 +171,9 @@ def autocomplete():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+
+    create_table_if_not_exists()
+    
     if request.method == 'POST':
         selected_card_name = request.form['selected_card_name']
 
