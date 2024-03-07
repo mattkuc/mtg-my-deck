@@ -8,12 +8,14 @@ Current functionality:
 - Card gallery display with name and rarity information (data loaded from database)
 - Simple statistics as total card count and rarities
 - Automated data loading to database SQLite3
+- Adding/Deleting cards
 
 Planned:
 - Better UX/UI
 - More statistics
 - Additional site for financial statistics of cards for price comparison
 - CRUD for decks of cards
+- Image functionality for dual sided cards
 
 
 USED TECHNOLOGIES:
