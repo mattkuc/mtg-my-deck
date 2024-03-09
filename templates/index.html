@@ -49,21 +49,17 @@
             </div>
             <div class="card_gallery">
                 {% for card_data in card_data_list|reverse %}
-                    <div class="card" data-rarity="{{ card_data.rarity }}">
-                        <img src="{{ card_data.image_uri_normal }}" alt="Card Image">
-                        <div class="card-text">
-                            <div class="info">
-                                <p>Name: {{ card_data.name }}</p>
-                                <p>Rarity: {{ card_data.rarity }}</p>
-                            </div>
-                            <div class="delete-button">
-                                <a href="{{ url_for('remove_card', card_id=card_data.id) }}" class="remove-card" title="Remove Card">
-                                    <i class="fa-solid fa-trash-can" style="color: white; font-size: 30px"></i>
-                                </a>
-                            </div>
-                        </div>
+                <div class="card">
+                    <img src="{{ url_for('static', filename=card_data.image_path) }}" alt="{{ card_data.name }}">
+                    <div class="card-text">
+                        <p>Name: {{ card_data.name }}</p>
+                        <p>Rarity: {{ card_data.rarity }}</p>
                     </div>
-                {% endfor %}
+                    <a href="{{ url_for('remove_card', card_id=card_data.id) }}" class="remove-card" title="Remove Card">
+                        <i class="fa-solid fa-trash-can" style="color: black;"></i>
+                    </a>
+                </div>
+            {% endfor %}
             </div>            
         </div>
     </div>

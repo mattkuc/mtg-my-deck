@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, g, redirect, url_for, jsonify
+from flask import Flask, render_template, request, g, redirect, send_from_directory, url_for, jsonify
 from urllib.parse import urlencode
 import requests
 import sqlite3
@@ -40,6 +40,11 @@ def remove_card(card_id):
     db.close()
 
     return redirect(url_for('index'))
+
+
+@app.route('/static/card_images/<path:filename>')
+def card_image(filename):
+    return send_from_directory('static/card_images', filename)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -86,7 +91,7 @@ def index():
         cumulative_price_eur = result['cumulative_price_eur']
 
         # Fetch all cards from the database
-        query = "SELECT id, name, rarity, image_uri_normal FROM cards"
+        query = "SELECT id, name, rarity, image_uri_normal, image_path FROM cards"
         cards = cursor.execute(query).fetchall()
 
         # Convert the rows to a list of dictionaries for easier template rendering
