@@ -49,7 +49,7 @@
             <div class="card_gallery">
                 {% for card_data in card_data_list|reverse %}
                 <div class="card">
-                    <img src="{{ card_data.image_uri_normal }}" alt="Card Image">
+                    <img src="{{ url_for('static', filename=card_data.image_path) }}" alt="{{ card_data.name }}">
                     <div class="card-text">
                         <p>Name: {{ card_data.name }}</p>
                         <p>Rarity: {{ card_data.rarity }}</p>

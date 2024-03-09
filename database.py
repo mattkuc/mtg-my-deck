@@ -1,7 +1,7 @@
 import sqlite3
 import os
 from flask import  g
-
+import requests
 
 def create_table_if_not_exists(app):
     # Check if the database file exists
@@ -18,6 +18,7 @@ def create_table_if_not_exists(app):
                 id TEXT PRIMARY KEY,
                 name TEXT,
                 image_uri_normal TEXT,
+                image_path TEXT,
                 booster INTEGER,
                 cardmarket_id INTEGER,
                 colors TEXT,
@@ -65,8 +66,19 @@ def close_db(e=None):
         db.close()
 
 def save_card_to_db(app,card_data):
-    db = get_db()
+    db = get_db(app)
     cursor = db.cursor()
+
+    card_name = card_data.get('name', '')
+    image_url = card_data.get('image_uris', {}).get('normal', '')
+    folder_path = os.path.join(app.static_folder, 'card_images')
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    filename = f"{card_name.replace(' ', '_')}.jpg"
+    image_path = os.path.join('card_images', filename)
+    save_image_to_folder(image_url, folder_path, filename)
+    card_data['image_path'] = image_path.replace('\\', '/')
 
     # Combine 'colors' into a single string
     colors_str = ''.join(card_data.get('colors', ''))
@@ -85,24 +97,27 @@ def save_card_to_db(app,card_data):
 
     cursor.execute('''
         INSERT INTO cards (
-            id, name, rarity, image_uri_normal, booster, cardmarket_id, colors,
-            edhrec_rank, flavor_text, foil, keywords, lang, mana_cost, nonfoil,
-            power, preview_source, preview_source_uri, previewed_at,
-            price_usd, price_eur, rarity, reprint, rulings_uri, scryfall_uri,
-            set_card, toughness, type_line, variation
+            id, name, rarity, image_uri_normal, image_path,
+            booster, cardmarket_id, colors, edhrec_rank, flavor_text, foil,
+            keywords, lang, mana_cost, nonfoil, power, preview_source,
+            preview_source_uri, previewed_at, price_usd, price_eur, rarity,
+            reprint, rulings_uri, scryfall_uri, set_card, toughness, type_line,
+            variation
         )
         VALUES (
-            :id, :name, :rarity, :image_uri_normal, :booster, :cardmarket_id, :colors,
-            :edhrec_rank, :flavor_text, :foil, :keywords, :lang, :mana_cost, :nonfoil,
-            :power, :preview_source, :preview_source_uri, :previewed_at,
-            :price_usd, :price_eur, :rarity, :reprint, :rulings_uri, :scryfall_uri,
-            :set_card, :toughness, :type_line, :variation
+            :id, :name, :rarity, :image_uri_normal, :image_path,
+            :booster, :cardmarket_id, :colors, :edhrec_rank, :flavor_text,
+            :foil, :keywords, :lang, :mana_cost, :nonfoil, :power,
+            :preview_source, :preview_source_uri, :previewed_at,
+            :price_usd, :price_eur, :rarity, :reprint, :rulings_uri,
+            :scryfall_uri, :set_card, :toughness, :type_line, :variation
         )
     ''', {
         'id': card_data.get('id', None),
         'name': card_data.get('name', None),
         'rarity': card_data.get('rarity', None),
         'image_uri_normal': card_data.get('image_uris', {}).get('normal', None),
+        'image_path': card_data.get('image_path', None),
         'booster': card_data.get('booster', None),
         'cardmarket_id': card_data.get('cardmarket_id', None),
         'colors': colors_str if colors_str else None,
@@ -131,3 +146,20 @@ def save_card_to_db(app,card_data):
 
     db.commit()
     db.close()
+
+
+def save_image_to_folder(image_url, folder_path, filename):
+    response = requests.get(image_url)
+    
+    if response.status_code == 200:
+        image_data = response.content
+        file_path = os.path.join(folder_path, filename)
+
+        with open(file_path, 'wb') as image_file:
+            image_file.write(image_data)
+
+        print(f"Image saved successfully: {file_path}")
+        return file_path
+    else:
+        print(f"Error: Unable to fetch image from {image_url}")
+        return None
