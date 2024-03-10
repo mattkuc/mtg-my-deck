@@ -32,7 +32,6 @@ def remove_card(card_id):
     db = get_db(app)
     cursor = db.cursor()
 
-    # Execute SQL query to delete the card with the specified ID
     query = "DELETE FROM cards WHERE id = ?"
     cursor.execute(query, (card_id,))
 
@@ -54,21 +53,17 @@ def index():
     if request.method == 'POST':
         selected_card_name = request.form['selected_card_name']
 
-        # Encode the query parameter to handle special characters
         encoded_card_name = urlencode({'exact': selected_card_name})
 
-        # Construct the API URL with the encoded parameter
         api_url = f"https://api.scryfall.com/cards/named?{encoded_card_name}"
 
         response = requests.get(api_url)
 
         if response.status_code == 200:
             card_data = response.json()
-
-            # Save the card data to the database
             save_card_to_db(app,card_data)
 
-            return redirect(url_for('index'))  # Redirect to the index route after adding the card
+            return redirect(url_for('index'))
         else:
             return f"Error: Unable to fetch card information for '{selected_card_name}'."
 
@@ -90,20 +85,17 @@ def index():
         cumulative_price_usd = result['cumulative_price_usd']
         cumulative_price_eur = result['cumulative_price_eur']
 
-        # Fetch all cards from the database
         query = "SELECT id, name, rarity, image_uri_normal, image_path FROM cards"
         cards = cursor.execute(query).fetchall()
 
-        # Convert the rows to a list of dictionaries for easier template rendering
         card_data_list = [dict(card) for card in cards]
 
-        # Calculate statistics
         total_cards = len(card_data_list)
         rarity_counts = {'common': 0, 'uncommon': 0, 'rare': 0, 'mythic': 0}
 
         for card in card_data_list:
             rarity = card['rarity']
-            rarity_counts[rarity] += 1  # Increment the count for the specific rarity
+            rarity_counts[rarity] += 1 
 
 
 

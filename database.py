@@ -4,15 +4,11 @@ from flask import  g
 import requests
 
 def create_table_if_not_exists(app):
-    # Check if the database file exists
+    
     if not os.path.exists(app.config['DATABASE']):
-        # Connect to the SQLite database (it will be created if it doesn't exist)
         conn = sqlite3.connect(app.config['DATABASE'])
 
-        # Create a cursor object to execute SQL commands
         cursor = conn.cursor()
-
-        # Create a table for storing card information
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS cards (
                 id TEXT PRIMARY KEY,
@@ -46,7 +42,6 @@ def create_table_if_not_exists(app):
             )
         ''')
 
-        # Commit the changes and close the connection
         conn.commit()
         conn.close()
 
@@ -80,16 +75,12 @@ def save_card_to_db(app,card_data):
     save_image_to_folder(image_url, folder_path, filename)
     card_data['image_path'] = image_path.replace('\\', '/')
 
-    # Combine 'colors' into a single string
     colors_str = ''.join(card_data.get('colors', ''))
 
-    # Combine 'keywords' into a single string with underscores
     keywords_str = '_'.join(card_data.get('keywords', ''))
 
-    # Extract prices for each currency
     prices_dict = card_data.get('prices', {})
 
-    # Extract preview parameters
     preview_data = card_data.get('preview', {})
     preview_source = preview_data.get('source', '')
     preview_source_uri = preview_data.get('source_uri', '')
