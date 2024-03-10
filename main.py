@@ -8,7 +8,7 @@ from database import create_table_if_not_exists, get_db, close_db, save_card_to_
 from card_operations import get_card_names_from_file, get_matching_card_names
 
 app = Flask(__name__, static_url_path='/static')
-app.config['DATABASE'] = 'mtg-cards.db'
+app.config['DATABASE'] = 'database/mtg-cards.db'
 
 @app.before_request
 def before_request():
