@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>My Flask App</title>
+    <title>MTG Management App</title>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
     <script src="https://kit.fontawesome.com/e8b358f9a3.js" crossorigin="anonymous"></script>
@@ -14,7 +14,7 @@
     <div class="container">
         <div class="container-form">
             <div class="text">
-                Add card
+                = Add card =
              </div>
             <form action="/", method="POST">
                 <div class="form-row">
@@ -24,7 +24,7 @@
                             <div id="ghost-text"></div>
                         </span>
                     </div>
-                    <div class="submit-btn" style="width: 850px;">
+                    <div class="submit-btn">
                         <div class="input-data">
                            <div class="inner"></div>
                            <input type="submit" value="Submit">
@@ -54,10 +54,10 @@
                     <div class="card-text">
                         <p>Name: {{ card_data.name }}</p>
                         <p>Rarity: {{ card_data.rarity }}</p>
+                        <a href="{{ url_for('remove_card', card_id=card_data.id) }}" class="remove-card" title="Remove Card">
+                            <i class="fa-solid fa-trash-can" style="color: white; float: right;"></i>
+                        </a>
                     </div>
-                    <a href="{{ url_for('remove_card', card_id=card_data.id) }}" class="remove-card" title="Remove Card">
-                        <i class="fa-solid fa-trash-can" style="color: black;"></i>
-                    </a>
                 </div>
             {% endfor %}
             </div>            

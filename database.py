@@ -65,6 +65,9 @@ def save_card_to_db(app,card_data):
     cursor = db.cursor()
 
     card_name = card_data.get('name', '')
+    print("CARD NAME: ",card_name)
+    card_name = card_name.replace('"','')
+    print("FIXED CARD NAME: ",card_name)
     image_url = card_data.get('image_uris', {}).get('normal', '')
     folder_path = os.path.join(app.static_folder, 'card_images')
     if not os.path.exists(folder_path):

@@ -52,7 +52,7 @@ def index():
     
     if request.method == 'POST':
         selected_card_name = request.form['selected_card_name']
-
+        selected_card_name = selected_card_name.replace('"','')
         encoded_card_name = urlencode({'exact': selected_card_name})
 
         api_url = f"https://api.scryfall.com/cards/named?{encoded_card_name}"
