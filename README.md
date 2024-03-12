@@ -10,7 +10,7 @@ Current functionality:
 - Automated data loading to database SQLite3
 - Adding/Deleting cards
 
-Planned:
+PLANNED:
 - Better UX/UI
 - More statistics
 - Additional site for financial statistics of cards for price comparison
@@ -31,4 +31,5 @@ USED LIBRARIES:
 
 
 Current outlook of webpage:
+
 <img src='./main_site.png' width=70%>
