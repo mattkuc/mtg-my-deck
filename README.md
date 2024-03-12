@@ -29,7 +29,11 @@ USED LIBRARIES:
 - Requests
 - OS
 
-
+USAGE:
+To run application, use this command:
+```
+flask --app .\main.py run
+```
 Current outlook of webpage:
 
 <img src='./main_site.png' width=70%>
