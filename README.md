@@ -31,4 +31,4 @@ USED LIBRARIES:
 
 
 Current outlook of webpage:
-<img src='./main_site.jpg' width=60%>
+<img src='./main_site.png' width=70%>
