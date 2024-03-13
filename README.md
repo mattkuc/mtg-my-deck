@@ -10,12 +10,13 @@ Current functionality:
 - Automated data loading to database SQLite3
 - Adding/Deleting cards
 
-Planned:
+PLANNED:
 - Better UX/UI
 - More statistics
 - Additional site for financial statistics of cards for price comparison
 - CRUD for decks of cards
 - Image functionality for dual sided cards
+- multiple decks/databases with option to choose
 
 
 USED TECHNOLOGIES:
@@ -27,3 +28,12 @@ USED LIBRARIES:
 - Flask
 - Requests
 - OS
+
+USAGE:
+To run application, use this command:
+```
+flask --app .\main.py run
+```
+Current outlook of webpage:
+
+<img src='./main_site.png' width=70%>
