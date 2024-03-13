@@ -1,5 +1,6 @@
 
 .vscode/launch.json
 __pycache__/
-static/
+static/card_images
+static/cached_images
 database/
