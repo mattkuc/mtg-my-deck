@@ -36,4 +36,4 @@ flask --app .\main.py run
 ```
 Current outlook of webpage:
 
-<img src='./main_site.png' width=70%>
+<img src='./main_site.png' width=90%>
