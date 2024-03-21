@@ -9,12 +9,12 @@ Current functionality:
 - Simple statistics as total card count and rarities
 - Automated data loading to database SQLite3
 - Adding/Deleting cards
+- Collector website, where user can download full card set and toggle card if is in possession or not
 
 PLANNED:
 - Better UX/UI
 - More statistics
 - Additional site for financial statistics of cards for price comparison
-- CRUD for decks of cards
 - Image functionality for dual sided cards
 - multiple decks/databases with option to choose
 
@@ -37,3 +37,7 @@ flask --app .\main.py run
 Current outlook of webpage:
 
 <img src='./main_page.png' width=90%>
+
+Current outlook of webpage for sets:
+
+<img src='./collector_page.png' width=80%>
