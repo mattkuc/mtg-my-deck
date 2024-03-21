@@ -256,6 +256,24 @@ form .form-row .submit-btn {
 }
 
 
+.rarity-common {
+    color: white;
+}
+
+.rarity-uncommon {
+    color: silver;
+    text-decoration: underline;
+}
+
+.rarity-rare {
+    color: gold;
+}
+
+.rarity-mythic {
+    color: orange;
+}
+
+
 /* Media query for screens smaller than 1200px
 @media screen and (max-width: 1200px) {
     .card,

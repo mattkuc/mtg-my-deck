@@ -89,7 +89,10 @@ def collector():
             cumulative_price_usd=cumulative_price_usd,
             cumulative_price_eur=cumulative_price_eur)
     else:
-        return render_template('collector.html', card_data_list=[])
+        return render_template('collector.html', card_data_list=[],total_cards=0,
+            rarity_counts=[],
+            cumulative_price_usd=[],
+            cumulative_price_eur=[])
 
 
 
@@ -126,7 +129,7 @@ def index():
                 COUNT(*) AS total_cards,
                 SUM(CAST(price_usd AS FLOAT)) AS cumulative_price_usd,
                 SUM(CAST(price_eur AS FLOAT)) AS cumulative_price_eur
-            FROM cards;
+            FROM main_cards;
         """
         result = cursor.execute(query).fetchone()
 
@@ -134,7 +137,7 @@ def index():
         cumulative_price_usd = result['cumulative_price_usd']
         cumulative_price_eur = result['cumulative_price_eur']
 
-        query = "SELECT id, name, rarity, image_uri_normal, image_path FROM cards"
+        query = "SELECT id, name, rarity, image_uri_normal, image_path FROM main_cards"
         cards = cursor.execute(query).fetchall()
 
         card_data_list = [dict(card) for card in cards]

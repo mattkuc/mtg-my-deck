@@ -188,7 +188,7 @@ def save_card_to_db(app,table_name,card_data):
     })
 
     db.commit()
-    time.sleep(0.1)
+    time.sleep(0.05)
 
 
 
@@ -213,29 +213,24 @@ def retrieve_card_data(app,card_set):
     cursor = db.cursor()
     cursor.execute(f"SELECT * FROM {card_set}")
     card_data_list = cursor.fetchall()
-    db.close()
     return card_data_list
 
 
-def download_cards(app,card_set):
-    page = 1
-    total_cards = None
-    
-    while total_cards is None or page * 175 < total_cards:
-        response = requests.get(f"https://api.scryfall.com/cards/search?order=set&q=e%3A{card_set}+is%3Abooster&unique=prints")
-        if response.status_code != 200:
-            print(f"Error fetching cards for page {page}: {response.status_code}")
-            return
-        
-        data = response.json()
-        
-        if total_cards is None:
-            total_cards = data.get('total_cards', 0)
-        
-        for card in data.get('data', []):
-            save_card_to_db(app,card_set,card)
-        
-        page += 1
+def download_cards(app,selected_card_set):
+    all_card_data = []
 
-    print("All cards downloaded and saved to database.")
-    close_db()
+    api_url = f"https://api.scryfall.com/cards/search?order=set&q=e%3A{selected_card_set}+is%3Abooster&unique=prints"
+    response = requests.get(api_url)
+    data = response.json()
+
+    all_card_data.extend(data['data'])
+
+    while data['has_more']:
+        response = requests.get(data['next_page'])
+        data = response.json()
+        all_card_data.extend(data['data'])
+
+    for card_data in all_card_data:
+        save_card_to_db(app,selected_card_set, card_data)
+
+    print(f"Total cards downloaded and saved: {len(all_card_data)}")
