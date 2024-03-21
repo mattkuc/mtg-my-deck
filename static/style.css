@@ -168,12 +168,15 @@ form .form-row .submit-btn {
 
 .card_stats {
     width: 25%;
-    padding: 10px;
+    padding: 25px;
     color: #fff;
     box-sizing: border-box;
     background: rgb(65, 65, 65);
     border-right: 3px solid black;
     border-radius: 0 0 0 20px;
+}
+.available-tables li{
+    margin-left: 25px;
 }
 
 .card_gallery {
@@ -212,6 +215,16 @@ form .form-row .submit-btn {
     margin-bottom: 10px;
     position: relative;
 }
+
+.not-in-possession {
+    filter: grayscale(100%); 
+    opacity: 50%;
+}
+
+.in-possession {
+    filter: none;
+}
+
 
 .card img {
     transform: scale(0.8);

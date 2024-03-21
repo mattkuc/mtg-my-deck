@@ -4,7 +4,7 @@ import requests
 import sqlite3
 import os
 import json
-from database import create_table, create_table_if_not_exists, download_cards, get_db, close_db, retrieve_card_data, save_card_to_db, table_exists
+from database import create_table, create_table_if_not_exists, download_cards, get_available_tables, get_db, close_db, retrieve_card_data, save_card_to_db, table_exists
 from card_operations import get_card_names_from_file, get_matching_card_names
 
 app = Flask(__name__, static_url_path='/static')
@@ -45,6 +45,20 @@ def remove_card(card_id):
 def card_image(filename):
     return send_from_directory('static/card_images', filename)
 
+@app.route('/update_possession/<table_name>/<card_id>', methods=['POST'])
+def update_possession(table_name, card_id):
+    db = get_db(app)
+    cursor = db.cursor()
+
+    query = f"""
+        UPDATE {table_name}
+        SET in_possession = CASE WHEN in_possession = 0 THEN 1 ELSE 0 END
+        WHERE id = ?
+    """
+    cursor.execute(query, (card_id,))
+    db.commit()
+
+    return jsonify({'success': True})
 
 @app.route('/collector', methods=['GET','POST'])
 def collector():
@@ -72,7 +86,7 @@ def collector():
         cumulative_price_usd = result['cumulative_price_usd']
         cumulative_price_eur = result['cumulative_price_eur']
 
-        query = f"SELECT id, name, rarity, image_uri_normal, image_path FROM {selected_card_set}"
+        query = f"SELECT id, name, rarity, image_uri_normal, image_path,set_card, in_possession FROM {selected_card_set}"
         cards = cursor.execute(query).fetchall()
 
         card_data_list = [dict(card) for card in cards]
@@ -84,15 +98,19 @@ def collector():
             rarity = card['rarity']
             rarity_counts[rarity] += 1 
 
+        available_tables = get_available_tables(app)
         return render_template('collector.html', card_data_list=card_data_list,total_cards=total_cards,
             rarity_counts=rarity_counts,
             cumulative_price_usd=cumulative_price_usd,
-            cumulative_price_eur=cumulative_price_eur)
+            cumulative_price_eur=cumulative_price_eur,
+            available_tables=available_tables)
     else:
+        available_tables = get_available_tables(app)
         return render_template('collector.html', card_data_list=[],total_cards=0,
             rarity_counts=[],
             cumulative_price_usd=[],
-            cumulative_price_eur=[])
+            cumulative_price_eur=[],
+            available_tables=available_tables)
 
 
 

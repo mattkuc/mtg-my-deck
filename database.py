@@ -45,7 +45,8 @@ def create_table(app,card_set):
             set_card TEXT,
             toughness TEXT,
             type_line TEXT,
-            variation INTEGER
+            variation INTEGER,
+            in_possession INTEGER
         )
     ''')
     conn.commit()
@@ -87,7 +88,8 @@ def create_table_if_not_exists(app,table_name):
                 set_card TEXT,
                 toughness TEXT,
                 type_line TEXT,
-                variation INTEGER
+                variation INTEGER,
+                in_possession INTEGER
             )
         ''')
 
@@ -145,7 +147,7 @@ def save_card_to_db(app,table_name,card_data):
             keywords, lang, mana_cost, nonfoil, power, preview_source,
             preview_source_uri, previewed_at, price_usd, price_eur, rarity,
             reprint, rulings_uri, scryfall_uri, set_card, toughness, type_line,
-            variation
+            variation,in_possession
         )
         VALUES (
             :id, :name, :rarity, :image_uri_normal, :image_path,
@@ -153,7 +155,7 @@ def save_card_to_db(app,table_name,card_data):
             :foil, :keywords, :lang, :mana_cost, :nonfoil, :power,
             :preview_source, :preview_source_uri, :previewed_at,
             :price_usd, :price_eur, :rarity, :reprint, :rulings_uri,
-            :scryfall_uri, :set_card, :toughness, :type_line, :variation
+            :scryfall_uri, :set_card, :toughness, :type_line, :variation, :in_possession
         )
     ''', {
         'id': card_data.get('id', None),
@@ -184,7 +186,8 @@ def save_card_to_db(app,table_name,card_data):
         'set_card': card_data.get('set', None),
         'toughness': card_data.get('toughness', None),
         'type_line': card_data.get('type_line', None),
-        'variation': card_data.get('variation', None)
+        'variation': card_data.get('variation', None),
+        'in_possession': 0
     })
 
     db.commit()
@@ -234,3 +237,17 @@ def download_cards(app,selected_card_set):
         save_card_to_db(app,selected_card_set, card_data)
 
     print(f"Total cards downloaded and saved: {len(all_card_data)}")
+
+
+def get_available_tables(app):
+    db = get_db(app)
+    cursor = db.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+
+    available_tables = [table[0] for table in tables if len(table[0]) == 3]
+
+    db.close()
+
+    return available_tables

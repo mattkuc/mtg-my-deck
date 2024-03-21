@@ -9,6 +9,7 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
     <script src="https://kit.fontawesome.com/e8b358f9a3.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='toggle_collector_possession.js') }}"></script>
 </head>
 <body>
     <nav>
@@ -82,17 +83,23 @@
                 <h3>Price</h3>
                 <p>Cumulative USD Price: ${{ "{:.2f}".format(cumulative_price_usd or 0.00) }}</p>
                 <p>Cumulative EUR Price: €{{ "{:.2f}".format(cumulative_price_eur or 0.00) }}</p>
+                <br>
+                <div class="available-tables">
+                    <h3>Available Tables (Sets)</h3>
+                    <ul>
+                        {% for table in available_tables %}
+                            <li>{{ table }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
             <div class="card_gallery">
                 {% for card_data in card_data_list %}
-                <div class="card">
+                <div class="card {{ 'in-possession' if card_data.in_possession else 'not-in-possession' }}" id="card-{{ card_data.id }}" onclick="togglePossession('{{ card_data.id }}', '{{ card_data.set_card }}')">
                     <img src="{{ url_for('static', filename=card_data.image_path) }}" alt="{{ card_data.name }}">
                     <div class="card-text">
                         <p>Name: {{ card_data.name }}</p>
                         <p class="rarity-{{ card_data.rarity }}">Rarity: {{ card_data.rarity }}</p>
-                        <a href="{{ url_for('remove_card', card_id=card_data.id) }}" class="remove-card" title="Remove Card">
-                            <i class="fa-solid fa-trash-can" style="color: white; float: right;"></i>
-                        </a>
                     </div>
                 </div>
                 {% endfor %}
