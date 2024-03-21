@@ -9,7 +9,6 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
     <script src="https://kit.fontawesome.com/e8b358f9a3.js" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='glow_card.js') }}"></script>
 </head>
 <body>
     <nav>
@@ -55,27 +54,20 @@
           <label for="menu-btn" class="btn menu-btn"><i class="fas fa-bars"></i></label>
         </div>
       </nav>
-    <div class="container">
+      <div class="container">
         <div class="container-form">
             <div class="text">
                 = Add card =
-             </div>
-            <form action="/", method="POST">
+            </div>
+            <form action="/collector" method="POST">
                 <div class="form-row">
                     <div class="input-data">
-                        <span id="combined-input">
-                            <input type="text" id="card_name" name="selected_card_name" placeholder="Card Name" autofocus>
-                            <div id="ghost-text"></div>
-                        </span>
+                        <input type="text" id="set_name" name="selected_card_set" placeholder="Set Name" autofocus>
                     </div>
                     <div class="submit-btn">
-                        <div class="input-data">
-                           <div class="inner"></div>
-                           <input type="submit" value="Submit">
-                        </div>
-                     </div>
+                        <input type="submit" value="Submit">
+                    </div>
                 </div>
-                
             </form>
         </div>
         <div class="cards">
@@ -92,7 +84,7 @@
                 <p>Cumulative EUR Price: €{{ "{:.2f}".format(cumulative_price_eur or 0.00) }}</p>
             </div>
             <div class="card_gallery">
-                {% for card_data in card_data_list|reverse %}
+                {% for card_data in card_data_list %}
                 <div class="card">
                     <img src="{{ url_for('static', filename=card_data.image_path) }}" alt="{{ card_data.name }}">
                     <div class="card-text">
@@ -103,9 +95,9 @@
                         </a>
                     </div>
                 </div>
-            {% endfor %}
+                {% endfor %}
             </div>            
         </div>
-    </div>
+    </div>    
 </body>
 </html>

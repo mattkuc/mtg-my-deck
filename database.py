@@ -1,16 +1,65 @@
 import sqlite3
 import os
+import time
 from flask import  g
 import requests
 
-def create_table_if_not_exists(app):
+
+def table_exists(app,card_set):
+    db = sqlite3.connect(app.config['DATABASE'])
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (card_set,))
+    table_exists = cursor.fetchone() is not None
+    db.close()
+    return table_exists
+
+def create_table(app,card_set):
+    conn = sqlite3.connect(app.config['DATABASE'])
+    cursor = conn.cursor()
+    cursor.execute(f'''
+        CREATE TABLE IF NOT EXISTS {card_set} (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            image_uri_normal TEXT,
+            image_path TEXT,
+            booster INTEGER,
+            cardmarket_id INTEGER,
+            colors TEXT,
+            edhrec_rank INTEGER,
+            flavor_text TEXT,
+            foil INTEGER,
+            keywords TEXT,
+            lang TEXT,
+            mana_cost TEXT,
+            nonfoil INTEGER,
+            power TEXT,
+            preview_source TEXT, 
+            preview_source_uri TEXT, 
+            previewed_at TEXT,
+            price_usd REAL,
+            price_eur REAL,
+            rarity TEXT,
+            reprint INTEGER,
+            rulings_uri TEXT,
+            scryfall_uri TEXT,
+            set_card TEXT,
+            toughness TEXT,
+            type_line TEXT,
+            variation INTEGER
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def create_table_if_not_exists(app,table_name):
     
     if not os.path.exists(app.config['DATABASE']):
         conn = sqlite3.connect(app.config['DATABASE'])
 
         cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS cards (
+        cursor.execute(f'''
+            CREATE TABLE IF NOT EXISTS {table_name} (
                 id TEXT PRIMARY KEY,
                 name TEXT,
                 image_uri_normal TEXT,
@@ -45,7 +94,7 @@ def create_table_if_not_exists(app):
         conn.commit()
         conn.close()
 
-        print("Table 'cards' created.")
+        print(f"Table '{table_name}' created.")
     else:
         print("Database file exists, skipping table creation.")
 
@@ -56,11 +105,11 @@ def get_db(app):
     return g.db
 
 def close_db(e=None):
-    db = g.pop('mtg-cards', None)
+    db = g.pop('db', None)
     if db is not None:
         db.close()
 
-def save_card_to_db(app,card_data):
+def save_card_to_db(app,table_name,card_data):
     db = get_db(app)
     cursor = db.cursor()
 
@@ -89,8 +138,8 @@ def save_card_to_db(app,card_data):
     preview_source_uri = preview_data.get('source_uri', '')
     previewed_at = preview_data.get('previewed_at', '')
 
-    cursor.execute('''
-        INSERT INTO cards (
+    cursor.execute(f'''
+        INSERT INTO {table_name} (
             id, name, rarity, image_uri_normal, image_path,
             booster, cardmarket_id, colors, edhrec_rank, flavor_text, foil,
             keywords, lang, mana_cost, nonfoil, power, preview_source,
@@ -139,7 +188,8 @@ def save_card_to_db(app,card_data):
     })
 
     db.commit()
-    db.close()
+    time.sleep(0.1)
+
 
 
 def save_image_to_folder(image_url, folder_path, filename):
@@ -157,3 +207,35 @@ def save_image_to_folder(image_url, folder_path, filename):
     else:
         print(f"Error: Unable to fetch image from {image_url}")
         return None
+
+def retrieve_card_data(app,card_set):
+    db = sqlite3.connect(app.config['DATABASE'])
+    cursor = db.cursor()
+    cursor.execute(f"SELECT * FROM {card_set}")
+    card_data_list = cursor.fetchall()
+    db.close()
+    return card_data_list
+
+
+def download_cards(app,card_set):
+    page = 1
+    total_cards = None
+    
+    while total_cards is None or page * 175 < total_cards:
+        response = requests.get(f"https://api.scryfall.com/cards/search?order=set&q=e%3A{card_set}+is%3Abooster&unique=prints")
+        if response.status_code != 200:
+            print(f"Error fetching cards for page {page}: {response.status_code}")
+            return
+        
+        data = response.json()
+        
+        if total_cards is None:
+            total_cards = data.get('total_cards', 0)
+        
+        for card in data.get('data', []):
+            save_card_to_db(app,card_set,card)
+        
+        page += 1
+
+    print("All cards downloaded and saved to database.")
+    close_db()
