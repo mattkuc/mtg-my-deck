@@ -1,16 +1,66 @@
 import sqlite3
 import os
+import time
 from flask import  g
 import requests
 
-def create_table_if_not_exists(app):
+
+def table_exists(app,card_set):
+    db = sqlite3.connect(app.config['DATABASE'])
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (card_set,))
+    table_exists = cursor.fetchone() is not None
+    db.close()
+    return table_exists
+
+def create_table(app,card_set):
+    conn = sqlite3.connect(app.config['DATABASE'])
+    cursor = conn.cursor()
+    cursor.execute(f'''
+        CREATE TABLE IF NOT EXISTS {card_set} (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            image_uri_normal TEXT,
+            image_path TEXT,
+            booster INTEGER,
+            cardmarket_id INTEGER,
+            colors TEXT,
+            edhrec_rank INTEGER,
+            flavor_text TEXT,
+            foil INTEGER,
+            keywords TEXT,
+            lang TEXT,
+            mana_cost TEXT,
+            nonfoil INTEGER,
+            power TEXT,
+            preview_source TEXT, 
+            preview_source_uri TEXT, 
+            previewed_at TEXT,
+            price_usd REAL,
+            price_eur REAL,
+            rarity TEXT,
+            reprint INTEGER,
+            rulings_uri TEXT,
+            scryfall_uri TEXT,
+            set_card TEXT,
+            toughness TEXT,
+            type_line TEXT,
+            variation INTEGER,
+            in_possession INTEGER
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def create_table_if_not_exists(app,table_name):
     
     if not os.path.exists(app.config['DATABASE']):
         conn = sqlite3.connect(app.config['DATABASE'])
 
         cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS cards (
+        cursor.execute(f'''
+            CREATE TABLE IF NOT EXISTS {table_name} (
                 id TEXT PRIMARY KEY,
                 name TEXT,
                 image_uri_normal TEXT,
@@ -38,14 +88,15 @@ def create_table_if_not_exists(app):
                 set_card TEXT,
                 toughness TEXT,
                 type_line TEXT,
-                variation INTEGER
+                variation INTEGER,
+                in_possession INTEGER
             )
         ''')
 
         conn.commit()
         conn.close()
 
-        print("Table 'cards' created.")
+        print(f"Table '{table_name}' created.")
     else:
         print("Database file exists, skipping table creation.")
 
@@ -56,11 +107,11 @@ def get_db(app):
     return g.db
 
 def close_db(e=None):
-    db = g.pop('mtg-cards', None)
+    db = g.pop('db', None)
     if db is not None:
         db.close()
 
-def save_card_to_db(app,card_data):
+def save_card_to_db(app,table_name,card_data):
     db = get_db(app)
     cursor = db.cursor()
 
@@ -89,14 +140,14 @@ def save_card_to_db(app,card_data):
     preview_source_uri = preview_data.get('source_uri', '')
     previewed_at = preview_data.get('previewed_at', '')
 
-    cursor.execute('''
-        INSERT INTO cards (
+    cursor.execute(f'''
+        INSERT INTO {table_name} (
             id, name, rarity, image_uri_normal, image_path,
             booster, cardmarket_id, colors, edhrec_rank, flavor_text, foil,
             keywords, lang, mana_cost, nonfoil, power, preview_source,
             preview_source_uri, previewed_at, price_usd, price_eur, rarity,
             reprint, rulings_uri, scryfall_uri, set_card, toughness, type_line,
-            variation
+            variation,in_possession
         )
         VALUES (
             :id, :name, :rarity, :image_uri_normal, :image_path,
@@ -104,7 +155,7 @@ def save_card_to_db(app,card_data):
             :foil, :keywords, :lang, :mana_cost, :nonfoil, :power,
             :preview_source, :preview_source_uri, :previewed_at,
             :price_usd, :price_eur, :rarity, :reprint, :rulings_uri,
-            :scryfall_uri, :set_card, :toughness, :type_line, :variation
+            :scryfall_uri, :set_card, :toughness, :type_line, :variation, :in_possession
         )
     ''', {
         'id': card_data.get('id', None),
@@ -135,11 +186,13 @@ def save_card_to_db(app,card_data):
         'set_card': card_data.get('set', None),
         'toughness': card_data.get('toughness', None),
         'type_line': card_data.get('type_line', None),
-        'variation': card_data.get('variation', None)
+        'variation': card_data.get('variation', None),
+        'in_possession': 0
     })
 
     db.commit()
-    db.close()
+    time.sleep(0.05)
+
 
 
 def save_image_to_folder(image_url, folder_path, filename):
@@ -157,3 +210,44 @@ def save_image_to_folder(image_url, folder_path, filename):
     else:
         print(f"Error: Unable to fetch image from {image_url}")
         return None
+
+def retrieve_card_data(app,card_set):
+    db = sqlite3.connect(app.config['DATABASE'])
+    cursor = db.cursor()
+    cursor.execute(f"SELECT * FROM {card_set}")
+    card_data_list = cursor.fetchall()
+    return card_data_list
+
+
+def download_cards(app,selected_card_set):
+    all_card_data = []
+
+    api_url = f"https://api.scryfall.com/cards/search?order=set&q=e%3A{selected_card_set}+is%3Abooster&unique=prints"
+    response = requests.get(api_url)
+    data = response.json()
+
+    all_card_data.extend(data['data'])
+
+    while data['has_more']:
+        response = requests.get(data['next_page'])
+        data = response.json()
+        all_card_data.extend(data['data'])
+
+    for card_data in all_card_data:
+        save_card_to_db(app,selected_card_set, card_data)
+
+    print(f"Total cards downloaded and saved: {len(all_card_data)}")
+
+
+def get_available_tables(app):
+    db = get_db(app)
+    cursor = db.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+
+    available_tables = [table[0] for table in tables if len(table[0]) == 3]
+
+    db.close()
+
+    return available_tables
